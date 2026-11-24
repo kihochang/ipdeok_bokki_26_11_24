@@ -1,0 +1,38 @@
+
+/* =================================
+   LIST PAGE
+================================= */
+
+.list-content {
+    padding: 34px 14px 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    background: #FFF9F2;
+}
+
+.menu-item {
+    width: 100%;
+}
+
+.menu-image {
+    width: 100%;
+    aspect-ratio: 2 / 1;
+    background: #EAD8C3;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.menu-image img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+}
+
+.menu-title {
+    margin-top: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #3B302C;
+}
