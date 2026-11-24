@@ -1,0 +1,500 @@
+
+/* =================================
+   GLOBAL
+================================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    width: 100%;
+    font-family: 'Noto Sans KR', sans-serif;
+    color: #000000;
+    background: #ffffff;
+}
+
+a {
+    text-decoration: none;
+    /* color: inherit; */
+    color :black;
+}
+
+button {
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    background: none;
+}
+
+.container {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    overflow: hidden;
+}
+
+.section-inner {
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+
+/* =================================
+   COMMON SECTION TITLE
+================================= */
+
+.section-title {
+    font-size: 30px;
+    font-weight: 500;
+    color: #000000;
+    text-align: center;
+}
+
+
+/* =================================
+   HEADER
+================================= */
+
+.header {
+    width: 100%;
+    height: 60px;
+    padding: 0 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    background: #ffffff;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+}
+
+.logo img {
+    display: block;
+    width: auto;
+    height: auto;
+    max-height: 40px;
+}
+
+.menu-button {
+    width: 24px;
+    height: 24px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #000000;
+}
+
+.menu-button svg {
+    width: 20px;
+    height: 20px;
+}
+
+
+/* =================================
+   HERO SECTION
+================================= */
+
+.hero {
+    width: 100%;
+    height: 500px;
+    background: #858585;
+    overflow: hidden;
+}
+
+.hero img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+}
+
+
+/* =================================
+   SECTION 1 : ORDER
+================================= */
+
+.section-1 {
+    padding: 50px 20px 30px;
+    background: #ffffff;
+}
+
+.order-button {
+    height: 80px;
+    border-radius: 20px;
+    background: #858585;
+    color: #ffffff;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 20px;
+    font-weight: 500;
+}
+
+.delivery-button {
+    width: 100%;
+}
+
+.order-button-group {
+    display: flex;
+    gap: 16px;
+    margin-top: 24px;
+}
+
+.order-button-group .order-button {
+    width: 50%;
+}
+
+
+/* =================================
+   SECTION 2 : RECOMMEND MENU
+================================= */
+
+.section-2 {
+    padding-top: 55px;
+    padding-bottom: 95px;
+    background: #cccccc;
+    overflow: hidden;
+}
+
+.section-2 .section-title {
+    margin-bottom: 22px;
+}
+
+
+/* HASHTAG */
+
+.tag-list {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+
+.tag {
+    min-width: 102px;
+    height: 35px;
+    padding: 0 12px;
+
+    border: 1px solid #aaaaaa;
+    border-radius: 30px;
+
+    font-size: 12px;
+    font-weight: 400;
+    color: #555555;
+    white-space: nowrap;
+}
+
+.tag.active {
+    background: #858585;
+    border-color: #858585;
+    color: #ffffff;
+}
+
+
+/* RECOMMEND CAROUSEL */
+
+.recommend-list {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+
+    width: max-content;
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+
+    margin-top: 50px;
+}
+
+.recommend-card {
+    width: 335px;
+    height: 380px;
+    flex-shrink: 0;
+
+    border-radius: 20px;
+    background: #858585;
+
+    overflow: hidden;
+}
+
+.main-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    overflow: visible;
+}
+
+.side-card {
+    width: 100px;
+    height: 380px;
+}
+
+.recommend-info {
+    width: 100%;
+    padding-top: 55px;
+
+    text-align: center;
+    color: #ffffff;
+}
+
+.recommend-info p {
+    font-size: 16px;
+    font-weight: 400;
+}
+
+.recommend-info h3 {
+    margin-top: 4px;
+    font-size: 20px;
+    font-weight: 500;
+}
+
+.small-button {
+    width: 150px;
+    height: 42px;
+    margin-top: 16px;
+
+    border: 1px solid #ffffff;
+    border-radius: 30px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.recommend-image {
+    width: 216px;
+    height: 216px;
+
+    position: absolute;
+    bottom: -50px;
+    left: 50%;
+    transform: translateX(-50%);
+
+    margin-top: 0;
+
+    background: #5a0808;
+    overflow: hidden;
+}
+
+.recommend-image img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+}
+
+
+/* =================================
+   SECTION 3 : MENU
+================================= */
+
+.section-3 {
+    padding-top: 35px;
+    padding-bottom: 60px;
+    background: #ffffff;
+}
+
+.section-3 .section-title {
+    margin-bottom: 18px;
+}
+
+.section-3 .tag-list {
+    margin-bottom: 35px;
+}
+
+
+/* MENU GRID */
+
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 20px;
+    row-gap: 25px;
+}
+
+.menu-card {
+    display: block;
+    min-width: 0;
+}
+
+.menu-image {
+    width: 100%;
+    aspect-ratio: 1 / 1.2;
+
+    border-radius: 15px;
+    background: #858585;
+    overflow: hidden;
+}
+
+.menu-image img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+}
+
+.menu-card h3 {
+    margin-top: 8px;
+
+    font-size: 14px;
+    font-weight: 500;
+    color: #000000;
+}
+
+
+/* =================================
+   SECTION 4 : EVENT
+================================= */
+
+.section-4 {
+    padding-top: 35px;
+    padding-bottom: 80px;
+    background: #ffffff;
+}
+
+.section-4 .section-title {
+    margin-bottom: 8px;
+}
+
+
+/* EVENT DESCRIPTION */
+
+.event-description {
+    text-align: center;
+    font-size: 14px;
+    font-weight: 500;
+    color: #838383;
+}
+
+
+/* EVENT TABS */
+
+.event-tabs {
+    width: 100%;
+    height: 45px;
+    margin-top: 30px;
+
+    display: flex;
+    align-items: center;
+
+    border-top: 1px solid #cccccc;
+    border-bottom: 1px solid #cccccc;
+}
+
+.event-tab {
+    width: 33.333%;
+    height: 100%;
+
+    font-size: 14px;
+    font-weight: 500;
+    color: #555555;
+}
+
+.event-tab.active {
+    font-weight: 700;
+    color: #000000;
+}
+
+
+/* EVENT CARD */
+
+.event-list {
+    padding: 40px 20px 0;
+}
+
+.event-card {
+    display: block;
+    width: 100%;
+
+    border: 1px solid #aaaaaa;
+    border-radius: 20px;
+    overflow: hidden;
+    background: #ffffff;
+}
+
+.event-image {
+    width: 100%;
+    height: 300px;
+
+    background: #858585;
+    overflow: hidden;
+}
+
+.event-image img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+}
+
+.event-info {
+    padding: 12px;
+}
+
+.event-subtitle {
+    font-size: 14px;
+    font-weight: 500;
+    color: #555555;
+}
+
+.event-title {
+    margin-top: 5px;
+
+    font-size: 16px;
+    font-weight: 500;
+    color: #000000;
+}
+
+.event-date {
+    margin-top: 18px;
+
+    font-size: 14px;
+    font-weight: 300;
+    color: #555555;
+}
+
+
+/* =================================
+   RESPONSIVE
+================================= */
+
+@media (max-width: 360px) {
+
+    .menu-grid {
+        column-gap: 12px;
+    }
+
+    .tag {
+        min-width: auto;
+        padding: 0 12px;
+    }
+
+    .recommend-card {
+        width: 300px;
+    }
+
+    .side-card {
+        width: 80px;
+    }
+
+
+}
+
+
