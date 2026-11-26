@@ -793,7 +793,11 @@ function login() {
     };
     const draw = () => {
         shell(`<section class="login">
-        <img width="80" src="${img('mascot_v34.png')}" alt="">
+        <div class="login-profile-icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                ${signup ? '<circle cx="9" cy="7" r="4"/><path d="M2 21v-2a7 7 0 0 1 14 0v2M19 8v6M16 11h6"/>' : '<circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/>'}
+            </svg>
+        </div>
         <h1>${signup ? '입덕을 환영합니다!' : '다시 만나서 반가워요!'}</h1>
         <p class="muted">${signup ? '가입하고 맛있는 입덕볶이를 즐겨보세요.' : '오늘도 맛있는 입덕볶이'}</p>
         <form id="login" class="summary">

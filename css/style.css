@@ -2341,3 +2341,16 @@ header .bag #badge {
 .my-default-label b { font-size: 18px; overflow-wrap: anywhere; }
 .my-default-tag { background: #F5E9DC; color: #A83229; font-size: 11px; padding: 4px 8px; border-radius: 6px; }
 .my-page .my-default-body p { font-size: 14px; line-height: 1.6; margin: 8px 0 0; color: #6B5B50; overflow-wrap: anywhere; }
+
+/* Login and signup profile icons */
+.login-profile-icon {
+    width: 76px;
+    height: 76px;
+    margin: 0 auto 14px;
+    border-radius: 50%;
+    background: #F5DFD0;
+    color: #A83229;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
