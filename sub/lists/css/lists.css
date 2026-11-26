@@ -1,8 +1,6 @@
-
 /* =================================
    LIST PAGE
 ================================= */
-
 .list-content {
     padding: 34px 14px 30px;
     display: flex;
@@ -36,3 +34,4 @@
     font-weight: 600;
     color: #3B302C;
 }
+
