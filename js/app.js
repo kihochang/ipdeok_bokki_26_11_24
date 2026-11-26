@@ -15,7 +15,9 @@ catch {
 }, set = (k, v) => localStorage.setItem('ipdeok4:' + scoped(k), JSON.stringify(v));
 user = get('user', null);
 let cart = get('cart', []);
-const amount = o => (menus[o.id][1] + o.opts.reduce((a, i) => a + extras[i][1], 0)) * o.qty, subtotal = () => cart.reduce((a, o) => a + amount(o), 0), delivery = () => cart.length ? 3000 : 0, discount = () => get('coupon', false) && get('couponUse', true) ? Math.min(1000, subtotal()) : 0, total = () => subtotal() + delivery() - discount();
+let checkoutItems = null;
+const orderItems = () => checkoutItems || cart;
+const amount = o => (menus[o.id][1] + o.opts.reduce((a, i) => a + extras[i][1], 0)) * o.qty, subtotal = () => orderItems().reduce((a, o) => a + amount(o), 0), delivery = () => orderItems().length ? 3000 : 0, discount = () => get('coupon', false) && get('couponUse', true) ? Math.min(1000, subtotal()) : 0, total = () => subtotal() + delivery() - discount();
 let profiles = get('profiles', {});
 const profile = () => Object.hasOwn(profiles, user) ? profiles[user] : null;
 const saveProfile = d => { 
@@ -99,6 +101,7 @@ function shell(content) {
         </nav>`;
     if (user)
     $('#navLogout').onclick = () => { 
+        sessionStorage.removeItem('ipdeok:checkout');
         set('user', null); 
         location.href = url(0); 
     }; 
@@ -380,6 +383,15 @@ function list() {
         </div>` : ''}`); 
     filter('grid'); 
 }
+function orderSteps(active) {
+    return `<nav class="order-steps" aria-label="주문 진행 단계">${['메뉴 선택','주문 확인','결제','주문 완료'].map((label,i)=>`<div class="order-step ${i < active ? 'done' : i === active ? 'current' : ''}" ${i === active ? 'aria-current="step"' : ''}><span>${i < active ? '✓' : i+1}</span><b>${label}</b></div>`).join('')}</nav>`;
+}
+const checkoutDraft = () => { try { return JSON.parse(sessionStorage.getItem('ipdeok:checkout')); } catch { return null; } };
+const saveCheckout = d => sessionStorage.setItem('ipdeok:checkout', JSON.stringify(d));
+function startCheckout(mode, items) {
+    saveCheckout({mode, items, owner:user, details:null});
+    if (user) location.href = url(3); else loginPrompt('payment');
+}
 function detail() { 
     let id = Number(new URLSearchParams(location.search).get('menu') || 0); 
     if (!menus[id])
@@ -389,7 +401,7 @@ function detail() {
     if (editing)
     Object.assign(o, cart[ei], { opts: [...cart[ei].opts] }); 
     const radios = (key, values) => `<div class="choices">${values.map((v, i) => `<label><input type="radio" name="${key}" value="${v}" ${v === o[key] ? 'checked' : ''}>${v}</label>`).join('')}</div>`; 
-    shell(`<img class="detail-photo" src="${img(m[3])}" alt="${m[0]}">
+    shell(`${orderSteps(0)}<img class="detail-photo" src="${img(m[3])}" alt="${m[0]}">
         <section>
         <span class="eyebrow">${m[4]}</span>
         <h1>${m[0]}</h1>
@@ -481,9 +493,10 @@ else
         d.showModal(); 
         d.querySelector('#dismissAdded').onclick = () => d.close(); 
     }; 
-    $('#buy').onclick = () => { 
-        add(); 
-        location.href = url(5); 
+    $('#buy').onclick = () => {
+        $('#buy').disabled = true;
+        add();
+        startCheckout('cart', cart);
     }; 
 }
 function summary() { 
@@ -538,7 +551,7 @@ else
     for (const [k, d] of [['remove', 0], ['dec', -1], ['inc', 1]])
     document.querySelectorAll(`[data-${k}]`).forEach(b => b.onclick = () => change(+b.dataset[k], d)); 
     if (cart.length)
-    $('#checkout').onclick = () => user ? location.href = url(3) : loginPrompt('payment'); 
+    $('#checkout').onclick = () => startCheckout('cart', cart); 
 }
 const pinIcon = `<svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="M20 10c0 6-8 11-8 11S4 16 4 10a8 8 0 1 1 16 0Z"/>
@@ -559,7 +572,13 @@ function payment() {
     location.replace(url(8, '?next=payment'));
     return;
 } 
-    if (!cart.length) {
+    let draft = checkoutDraft();
+    if (!draft || (draft.owner !== null && draft.owner !== user)) draft = {mode:'cart', items:cart, owner:user, details:null};
+    if (draft.owner === null) draft.owner = user;
+    if (draft.mode === 'cart') draft.items = cart;
+    saveCheckout(draft);
+    checkoutItems = draft.items;
+    if (!checkoutItems.length) {
     location.replace(url(5));
     return;
 } 
@@ -567,12 +586,20 @@ function payment() {
     location.replace(url(9, '?next=payment'));
     return;
 } 
-    const saved = defaultAddress(); 
-    let selected = { ...saved }; 
-    shell(`<section>
+    const saved = defaultAddress();
+    let selected = addresses().find(a=>a.id===draft.details?.addressId) || {...saved}; 
+    if (new URLSearchParams(location.search).get('step') === 'pay') {
+        if (draft.details) paymentMethod(draft); else location.replace(url(3));
+        return;
+    }
+    shell(`${orderSteps(1)}<section>
         <span class="eyebrow">CHECKOUT</span>
-        <h1>주문 및 결제</h1>
-        <p class="muted">실제 결제되지 않는 시연 화면입니다.</p>${cart.map((o, i) => item(o, i)).join('')}<a href="${url(5)}">장바구니 수정 →</a>
+        <h1>주문 확인</h1>
+        <p class="muted">실제 결제되지 않는 시연 화면입니다.</p>${checkoutItems.map((o, i) => item(o, i)).join('')}<a class="checkout-edit" href="${draft.mode === 'direct' ? url(2,'?menu='+checkoutItems[0].id) : url(5)}">
+            ${uiIcon('<circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.6a2 2 0 0 0 2-1.6L23 6H6"/>')}
+            <span>${draft.mode === 'direct' ? '메뉴 다시 선택' : '장바구니 수정하기'}</span>
+            ${uiIcon('<path d="m9 18 6-6-6-6"/>')}
+        </a>
         </section>
         <form id="payform">
         <section class="checkout-delivery">
@@ -581,28 +608,25 @@ function payment() {
         <h2>배달 주소</h2>
         <button type="button" class="address-change" id="changeAddress" aria-expanded="false">변경</button>
         </div>
-        <div id="addressView">${addressMarkup(saved, '기본 배달지')}</div>
-        <div id="addressEdit" hidden>${addressChoices(saved.id)}<button type="button" class="secondary block" id="applyAddress">변경 완료</button>
+        <div id="addressView">${addressMarkup(selected, selected.id===saved.id?'기본 배달지':'이번 주문 배달지')}</div>
+        <div id="addressEdit" hidden>${addressChoices(selected.id)}<button type="button" class="secondary block" id="applyAddress">변경 완료</button>
         </div>
         </div>
         <div class="delivery-card request-card">
         <h2>요청사항</h2>
-        <label>가게 사장님께<textarea name="shop" placeholder="예: 일회용 수저는 빼주세요"></textarea>
+        <label>가게 사장님께<textarea name="shop" placeholder="예: 일회용 수저는 빼주세요">${esc(draft.details?.shop || '')}</textarea>
         </label>
-        <label>배달 기사님께<textarea name="rider" placeholder="예: 문 앞에 놓아주세요"></textarea>
+        <label>배달 기사님께<textarea name="rider" placeholder="예: 문 앞에 놓아주세요">${esc(draft.details?.rider || '')}</textarea>
         </label>
         </div>
         </section>
         <section>
-        <h2>결제수단</h2>
-        <div class="choices">${['일반 카드', '네이버페이', '카카오페이', '페이코', '토스페이'].map((m, i) => `<label><input type="radio" name="method" value="${m}" required ${i === 0 ? 'checked' : ''}>${m}</label>`).join('')}</div>
+        <h2>쿠폰 및 결제 금액</h2>
         <label class="option">
         <span><input type="checkbox" id="coupon" ${get('coupon', false) ? (get('couponUse', true) ? 'checked' : '') : 'disabled'}> 시연용 1,000원 쿠폰 ${get('coupon', false) ? '' : '(이벤트에서 발급 필요)'}</span>
         </label>
         <div id="sum">${summary()}</div>
-        <label class="option">
-        <span><input type="checkbox" required> 모의 결제에 동의합니다.</span>
-        </label>
+
         </section>
         <div class="sticky">
         <button class="primary" id="pay">${won(total())} 결제하기</button>
@@ -627,26 +651,46 @@ function payment() {
         $('#sum').innerHTML = summary(); 
         $('#pay').textContent = won(total()) + ' 결제하기'; 
     }; 
+    $('#payform').onsubmit = e => {
+        e.preventDefault();
+        if (!$('#addressEdit').hidden) return toast('배달지 변경을 완료해 주세요');
+        draft.details = {...Object.fromEntries(new FormData(e.target)), addressId:selected.id};
+        saveCheckout(draft);
+        location.href = url(3,'?step=pay');
+    };
+}
+function paymentMethod(draft) {
+    const selected = addresses().find(a=>a.id===draft.details.addressId);
+    if (!selected) { location.replace(url(3)); return; }
+    shell(`${orderSteps(2)}<section><span class="eyebrow">PAYMENT</span><h1>결제</h1><p class="muted">실제 결제되지 않는 시연 화면입니다.</p><a class="checkout-edit" href="${url(3)}">
+            ${uiIcon('<path d="m15 18-6-6 6-6"/>')}
+            ${uiIcon('<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 3h6M8 16l1-4 6-6 3 3-6 6-4 1Z"/>')}
+            <span>주문 정보 수정하기</span>
+        </a></section>
+        <form id="payform"><section class="panel"><h2>결제수단</h2><div class="choices">${['일반 카드','네이버페이','카카오페이','페이코','토스페이'].map((m,i)=>`<label><input type="radio" name="method" value="${m}" required ${i===0?'checked':''}>${m}</label>`).join('')}</div></section>
+        <section>${summary()}<label class="option"><span><input type="checkbox" required> 모의 결제에 동의합니다.</span></label></section><div class="sticky"><button class="primary" id="pay">${won(total())} 결제하기</button></div></form>`);
     let submitting = false;
-    $('#payform').onsubmit = e => { 
-        e.preventDefault(); 
-        if (!$('#addressEdit').hidden) {
-    toast('배달지 변경을 완료해 주세요');
-    return;
-} 
-        const data = Object.fromEntries(new FormData(e.target)); 
-        if (submitting || !get('cart', []).length) return;
+    $('#payform').onsubmit = e => {
+        e.preventDefault();
+        if (submitting || !checkoutDraft() || !checkoutItems.length) return;
         submitting = true;
         $('#pay').disabled = true;
-        $('#pay').textContent = '결제 처리 중…';
-        const receipt = { items: cart.map(o => ({ ...o, menuName: menus[o.id][0], image: menus[o.id][3], paid: amount(o) })), date: new Date().toISOString(), subtotal: subtotal(), delivery: delivery(), discount: discount(), total: total(), number: Date.now().toString().slice(-10), ...data, ...selected }; 
-        set('receipt', receipt); 
-        set('orders', [receipt, ...get('orders', [])]); 
-        set('cart', []); 
-        if (receipt.discount)
-    set('coupon', false); 
-        location.href = url(4); 
-    }; 
+        const data = Object.fromEntries(new FormData(e.target));
+        const receipt = {items:checkoutItems.map(o=>({...o,menuName:menus[o.id][0],image:menus[o.id][3],paid:amount(o)})),date:new Date().toISOString(),subtotal:subtotal(),delivery:delivery(),discount:discount(),total:total(),number:Date.now().toString().slice(-10),shop:draft.details.shop,rider:draft.details.rider,...data,...selected};
+        const d = document.createElement('dialog');
+        d.className = 'payment-loading';
+        d.setAttribute('aria-labelledby','loadingTitle');
+        d.innerHTML = `<div class="payment-orbit"><div class="payment-ring"></div><div class="payment-card-icon">${uiIcon('<rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20M6 15h4M14 15h4"/>')}</div></div><span class="payment-kicker">PAYMENT PROCESSING</span><h2 id="loadingTitle">맛있는 입덕까지 잠시만!</h2><p>모의 결제를 처리하고 있어요.<br>조금만 기다려 주세요.</p><div class="payment-progress"><span></span></div><small>IPDEOK BOKKI</small>`;
+        d.addEventListener('cancel', e=>e.preventDefault());
+        document.body.append(d); d.showModal();
+        setTimeout(()=>{
+            set('receipt',receipt); set('orders',[receipt,...get('orders',[])]);
+            if (draft.mode==='cart') set('cart',[]);
+            if (receipt.discount) set('coupon',false);
+            sessionStorage.removeItem('ipdeok:checkout');
+            location.replace(url(4));
+        },1500);
+    };
 }
 function finish() { 
     if (!user) {
@@ -661,7 +705,7 @@ function finish() {
         </section>`);
     return;
 } 
-    shell(`<div class="success">
+    shell(`${orderSteps(3)}<div class="success">
         <div class="receipt-dive" aria-hidden="true">
         <span class="dive-scene" aria-hidden="true">
         <svg viewBox="0 -20 120 145" xmlns="http://www.w3.org/2000/svg">
@@ -987,7 +1031,8 @@ function mypage() {
         };
         if (view === 'main') {
             $('#logout').onclick = () => { 
-                set('user', null); 
+                sessionStorage.removeItem('ipdeok:checkout');
+        set('user', null); 
                 location.href = url(0); 
             };
             $('#defaultChange').onclick = () => { 
